@@ -94,6 +94,10 @@ class MainActivity : ComponentActivity() {
     private fun handleIntent(i: Intent?) {
         if (i?.action != Intent.ACTION_VIEW) return
         val uri: Uri = i.data ?: return
+        // Only accept documents shared by other apps (content://). Reject file:// paths and our own
+        // provider, so another app can't make us open or overwrite PyDF's private files.
+        if (uri.scheme != android.content.ContentResolver.SCHEME_CONTENT) return
+        if (uri.authority?.startsWith(packageName) == true) return
         controller.takePermission(uri)
         controller.open(uri)
     }
