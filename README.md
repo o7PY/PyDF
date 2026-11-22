@@ -11,6 +11,8 @@
 
 <h3 align="center">Rest your hand. Write like it's paper.</h3>
 
+<p align="center"><a href="https://o7py.github.io/PyDF/"><b>🌐 Visit the website →</b></a></p>
+
 <p align="center">
 PyDF is a fast, beautiful PDF reader and annotator built for Samsung tablets and phones with the S Pen.<br>
 Your palm never draws, never scrolls, never zooms. The pen just writes.
