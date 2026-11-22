@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/pydf-banner.svg" alt="PyDF: the PDF annotator that ignores your palm" width="100%">
+  <img src="docs/assets/pydf-banner.svg" alt="PyDF: A Smart PDF annotator specialized for reading" width="100%">
 </p>
 
 <p align="center">

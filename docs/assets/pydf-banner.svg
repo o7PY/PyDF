@@ -7,7 +7,7 @@
 <g clip-path="url(#tlb)"><path fill-rule="evenodd" d="M31 30H51A13 13 0 0 1 51 56H43V74H31Z M43 39V47H50A4 4 0 0 0 50 39Z" fill="#1B1F3B"/></g><g clip-path="url(#brb)"><path fill-rule="evenodd" d="M31 30H51A13 13 0 0 1 51 56H43V74H31Z M43 39V47H50A4 4 0 0 0 50 39Z" fill="#FFFFFF"/></g></g>
 <path d="M58 8v12a6 6 0 0 0 6 6h12z" fill="#8C9EFF"/><path d="M24 8h34l18 18v56a6 6 0 0 1-6 6H24a6 6 0 0 1-6-6V14a6 6 0 0 1 6-6z" fill="none" stroke="#C9CEE3" stroke-width="3" stroke-linejoin="round"/></g></g>
 <text x="420" y="205" font-family="'Bricolage Grotesque','Space Grotesk','Segoe UI',system-ui,sans-serif" font-weight="800" font-size="132" letter-spacing="-4" fill="#ECEEFA">P<tspan fill="#8C9EFF">y</tspan>DF</text>
-<rect x="424" y="236" width="560" height="34" rx="6" fill="#FFD43B" opacity=".9"/>
-<text x="436" y="262" font-family="'Inter','Segoe UI',system-ui,sans-serif" font-weight="600" font-size="26" fill="#1B1F3B">The PDF annotator that ignores your palm.</text>
+<rect x="424" y="236" width="660" height="34" rx="6" fill="#FFD43B" opacity=".9"/>
+<text x="436" y="262" font-family="'Inter','Segoe UI',system-ui,sans-serif" font-weight="600" font-size="26" fill="#1B1F3B">A Smart PDF annotator specialized for reading</text>
 <text x="424" y="318" font-family="'Inter','Segoe UI',system-ui,sans-serif" font-size="24" fill="#A3A9C7">Smart pen · Night mode · 100% offline · Made for the S Pen</text>
 </svg>
