@@ -1,0 +1,302 @@
+<title>PyDF Logo Concepts</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+  /* Layout: a specimen sheet. Header, then a 2-column grid of concept cards; each card = big marks on
+     light + dark tiles, an app-icon size ladder, the wordmark lockup, and a note. */
+  :root {
+    --bg: #F3F4F8;          /* cool paper grey, biased toward the indigo accent */
+    --surface: #FFFFFF;
+    --fg: #1B1F3B;          /* app ink */
+    --muted: #5B6280;
+    --line: #DDE0EC;
+    --accent: #3D5AFE;      /* app accent */
+    --hl: #FFD43B;          /* highlighter */
+    --tile-light: #FFFFFF;
+    --tile-dark: #151827;
+    --font-display: "Bricolage Grotesque", "Space Grotesk", system-ui, sans-serif;
+    --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0F1120; --surface: #181B2E; --fg: #ECEEFA; --muted: #A3A9C7; --line: #2A2F4A;
+      --accent: #8C9EFF; --tile-light: #FFFFFF; --tile-dark: #0B0D18; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F1120; --surface: #181B2E; --fg: #ECEEFA; --muted: #A3A9C7; --line: #2A2F4A;
+    --accent: #8C9EFF; --tile-light: #FFFFFF; --tile-dark: #0B0D18; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding-block: 40px 64px; }
+
+  header { display: grid; gap: 10px; margin-bottom: 32px; }
+  .eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(34px, 6vw, 56px); line-height: 1.02; margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+  h1 .y { color: var(--accent); position: relative; }
+  h1 .y::after { content: ""; position: absolute; left: -4%; right: -4%; bottom: .12em; height: .32em; background: var(--hl); opacity: .75; z-index: -1; border-radius: 3px; }
+  h1 { position: relative; z-index: 0; isolation: isolate; }
+  .lede { max-width: 62ch; color: var(--muted); margin: 0; }
+  .picked { font-size: 14px; color: var(--fg); min-height: 1.4em; }
+  .picked b { font-weight: 600; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 500px), 1fr)); gap: 20px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 20px;
+    display: grid; gap: 16px; min-width: 0; transition: border-color .15s, box-shadow .15s;
+  }
+  .card.is-picked { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .card h2 { font-family: var(--font-display); font-weight: 700; font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+  .new { font: 600 11px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--fg); background: var(--hl); border-radius: 6px; padding: 2px 6px; vertical-align: middle; }
+  .tag { font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: .04em; }
+
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tile { aspect-ratio: 1; max-width: 100%; border-radius: 14px; display: grid; place-items: center; border: 1px solid var(--line); }
+  .tile.light { background: var(--tile-light); }
+  .tile.dark { background: var(--tile-dark); border-color: #262A44; }
+  .tile svg { width: 62%; height: 62%; }
+
+  .ladder { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+  .ladder figure { margin: 0; display: grid; justify-items: center; gap: 6px; }
+  .ladder figcaption { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .lockup { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+  .lockup svg { width: 44px; height: 44px; flex: none; }
+  .wordmark { font-family: var(--font-display); font-weight: 800; font-size: 30px; letter-spacing: -0.02em; }
+  .wordmark em { font-style: normal; color: var(--accent); }
+
+  .note { margin: 0; color: var(--muted); font-size: 14px; max-width: 60ch; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  button {
+    font: 500 13px var(--font-body); color: var(--fg); background: transparent; border: 1px solid var(--line);
+    border-radius: 10px; padding: 8px 12px; min-height: 40px; cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button.pick[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  :root[data-theme="dark"] button.pick[aria-pressed="true"] { color: #0F1120; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) button.pick[aria-pressed="true"] { color: #0F1120; } }
+
+  footer { margin-top: 36px; color: var(--muted); font-size: 13px; }
+  @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Identity exploration · 11 marks</div>
+    <h1>P<span class="y">y</span>DF logo concepts</h1>
+    <p class="lede">Each mark is drawn from the app itself: pages, the S Pen, highlighter swipes and night mode. You see it on white and on black, as the launcher icon from 96 down to 24 px, and next to the name. Tap <b>Pick</b> on your favourite and <b>Copy SVG</b> to grab the icon.</p>
+    <div class="picked" id="picked" aria-live="polite"></div>
+  </header>
+  <main class="grid" id="grid"></main>
+  <footer>All marks are original vector art in a 96 × 96 grid. Colours: ink #1B1F3B, indigo #3D5AFE, periwinkle #8C9EFF, highlighter #FFD43B.</footer>
+</div>
+
+<script>
+(() => {
+  const INK = "#1B1F3B", IND = "#3D5AFE", IND2 = "#8C9EFF", YEL = "#FFD43B", PAPER = "#FFFFFF", LINE = "#5B6280";
+  let uid = 0;
+
+  // Split day/night page. `content(main, accent)` draws the page's contents; it is drawn twice,
+  // clipped to each half, so everything flips colour across the diagonal.
+  const DISPLAY = "'Bricolage Grotesque', 'Space Grotesk', system-ui, sans-serif";
+  function negative(ink, content) {
+    const n = ++uid;
+    const page = "M24 8h34l18 18v56a6 6 0 0 1-6 6H24a6 6 0 0 1-6-6V14a6 6 0 0 1 6-6z";
+    return `
+      <defs>
+        <clipPath id="pg${n}"><path d="${page}"/></clipPath>
+        <clipPath id="tl${n}"><polygon points="0,0 96,0 0,96"/></clipPath>
+        <clipPath id="br${n}"><polygon points="96,0 96,96 0,96"/></clipPath>
+      </defs>
+      <g clip-path="url(#pg${n})">
+        <rect width="96" height="96" fill="${PAPER}"/>
+        <polygon points="96,0 96,96 0,96" fill="${INK}"/>
+        <g clip-path="url(#tl${n})">${content(INK, IND)}</g>
+        <g clip-path="url(#br${n})">${content(PAPER, IND2)}</g>
+      </g>
+      <path d="M58 8v12a6 6 0 0 0 6 6h12z" fill="${IND2}"/>
+      <path d="${page}" fill="none" stroke="${ink === INK ? INK : "#C9CEE3"}" stroke-width="3" stroke-linejoin="round"/>`;
+  }
+  const lines = (fg, ys, w = 42) => ys.map((y, i) => `<rect x="${47 - w / 2}" y="${y}" width="${i === ys.length - 1 ? w * 0.7 : w}" height="4.5" rx="2.25" fill="${fg}"/>`).join("");
+
+  // Each mark returns inner SVG for a 0..96 box. `ink` is swapped to a light colour on dark grounds.
+  const concepts = [
+    {
+      id: "dog-ear", name: "Dog-ear P", tag: "page · monogram",
+      iconBg: IND,
+      note: "A page with a folded corner and a bold indigo P sitting on a highlighter stroke. Reads clearly as a PDF tool even at 24 px.",
+      mark: (ink) => `
+        <path d="M26 8h32l20 20v54a6 6 0 0 1-6 6H26a6 6 0 0 1-6-6V14a6 6 0 0 1 6-6z" fill="${PAPER}" stroke="${ink}" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M58 8v14a6 6 0 0 0 6 6h14z" fill="${IND2}" stroke="${ink}" stroke-width="3" stroke-linejoin="round"/>
+        <rect x="27" y="47" width="42" height="11" rx="2" fill="${YEL}"/>
+        <path fill-rule="evenodd" d="M36 34h14a12 12 0 0 1 0 24h-6v14h-8z M44 41v10h6a5 5 0 0 0 0-10z" fill="${IND}"/>`
+    },
+    {
+      id: "serpent", name: "Highlight Serpent", tag: "highlighter · py nod",
+      iconBg: INK,
+      note: "One highlighter swipe winds down three lines of text like a little snake, a quiet nod to the “Py”. Captures the smart pen highlighting line after line.",
+      mark: (ink) => `
+        <path d="M22 29H62Q76 29 76 38Q76 47 62 47H34Q20 47 20 56Q20 65 34 65H72" fill="none" stroke="${YEL}" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="18" y="26" width="60" height="6" rx="3" fill="${ink === INK ? LINE : "#C9CEE3"}" opacity=".9"/>
+        <rect x="18" y="44" width="60" height="6" rx="3" fill="${ink === INK ? LINE : "#C9CEE3"}" opacity=".9"/>
+        <rect x="18" y="62" width="48" height="6" rx="3" fill="${ink === INK ? LINE : "#C9CEE3"}" opacity=".9"/>
+        <circle cx="25" cy="22" r="3" fill="${ink}"/>`
+    },
+    {
+      id: "nib", name: "Ink Nib", tag: "pen · writing",
+      iconBg: "#F3F4F8",
+      note: "A fountain-pen nib crossing a highlighter bar: writing and highlighting in one shape. Classic and calm, works on any ground.",
+      mark: (ink) => `
+        <rect x="10" y="50" width="76" height="13" rx="3" fill="${YEL}"/>
+        <path d="M30 10h36v24L48 86 30 34z" fill="${IND}"/>
+        <path d="M30 28h36v6H30z" fill="${ink === INK ? "#2A3FD1" : "#2A3FD1"}"/>
+        <circle cx="48" cy="45" r="5" fill="${PAPER}"/>
+        <path d="M47 49h2l-1 33z" fill="${PAPER}"/>`
+    },
+    {
+      id: "negative", name: "Negative", tag: "night mode · split page",
+      iconBg: IND,
+      note: "A page split corner to corner into day and night, with the text lines flipping colour across the cut. Shows off night mode, the app's newest trick.",
+      mark: (ink) => negative(ink, (fg) => lines(fg, [32, 44, 56, 68])),
+    },
+    {
+      id: "negative-p", name: "Negative · P", tag: "chosen · app icon",
+      iconBg: IND, isNew: true,
+      note: "The split page with one big P. The letter itself is cut in half by the diagonal, dark on the day side and white on the night side. Boldest at small sizes.",
+      mark: (ink) => negative(ink, (fg) =>
+        `<path fill-rule="evenodd" d="M31 30H51A13 13 0 0 1 51 56H43V74H31Z M43 39V47H50A4 4 0 0 0 50 39Z" fill="${fg}"/>`),
+    },
+    {
+      id: "negative-py", name: "Negative · Py", tag: "night mode · py",
+      iconBg: IND, isNew: true,
+      note: "“Py” on the split page with two text lines underneath. The y keeps the indigo accent on both halves, so it still reads as Python-flavoured.",
+      mark: (ink) => negative(ink, (fg, accent) =>
+        `<text x="46" y="60" text-anchor="middle" font-family="${DISPLAY}" font-weight="800" font-size="40" letter-spacing="-1.5" fill="${fg}">P<tspan fill="${accent}">y</tspan></text>` +
+        lines(fg, [68, 76], 36)),
+    },
+    {
+      id: "negative-pydf", name: "Negative · PyDF", tag: "night mode · full name",
+      iconBg: IND, isNew: true,
+      note: "The full name across the split, with text lines above and below like a title on a page. Best for the home screen and splash; at 24 px the name gets small, so pair it with Negative · P as the launcher icon.",
+      mark: (ink) => negative(ink, (fg, accent) =>
+        lines(fg, [30], 30) +
+        `<text x="47" y="58" text-anchor="middle" font-family="${DISPLAY}" font-weight="800" font-size="22" letter-spacing="-0.6" fill="${fg}">P<tspan fill="${accent}">y</tspan>DF</text>` +
+        lines(fg, [66, 74], 34)),
+    },
+    {
+      id: "monogram", name: "Py Monogram", tag: "letterform",
+      iconBg: PAPER,
+      note: "A solid geometric P with a pen-stroke y whose tail curls like a signature. Pure type, the most “brand” of the set.",
+      mark: (ink) => `
+        <path fill-rule="evenodd" d="M16 16h22a18 18 0 0 1 0 36H28v28H16z M28 27v14h10a7 7 0 0 0 0-14z" fill="${ink}"/>
+        <path d="M52 40L64 63" fill="none" stroke="${IND}" stroke-width="10" stroke-linecap="round"/>
+        <path d="M80 40L62 79Q57 89 46 86" fill="none" stroke="${IND}" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>`
+    },
+    {
+      id: "sheaf", name: "Sheaf", tag: "pages · stack",
+      iconBg: INK,
+      note: "Three fanned pages in the app's blues, with a highlighted line on the front sheet. Friendly and recognisable; nods to the page panel.",
+      mark: (ink) => `
+        <rect x="32" y="6" width="50" height="64" rx="6" fill="${IND2}"/>
+        <rect x="25" y="13" width="50" height="64" rx="6" fill="${IND}"/>
+        <rect x="16" y="22" width="50" height="66" rx="6" fill="${PAPER}" stroke="${ink === INK ? INK : "transparent"}" stroke-width="3"/>
+        <rect x="24" y="34" width="34" height="5" rx="2.5" fill="${LINE}"/>
+        <rect x="22" y="44" width="38" height="11" rx="2" fill="${YEL}"/>
+        <rect x="24" y="47" width="34" height="5" rx="2.5" fill="${LINE}"/>
+        <rect x="24" y="61" width="34" height="5" rx="2.5" fill="${LINE}"/>
+        <rect x="24" y="72" width="22" height="5" rx="2.5" fill="${LINE}"/>`
+    },
+    {
+      id: "swipe", name: "Swipe", tag: "wordmark-first",
+      iconBg: YEL,
+      note: "“Py” set heavy on a tilted highlighter swipe. Loud and cheerful; the icon is the wordmark, so the name sticks.",
+      mark: (ink) => `
+        <rect x="8" y="42" width="80" height="26" rx="7" transform="rotate(-6 48 55)" fill="${YEL}"/>
+        <text x="48" y="67" text-anchor="middle" font-family="'Bricolage Grotesque', 'Space Grotesk', system-ui, sans-serif" font-weight="800" font-size="46" letter-spacing="-2" fill="${ink === INK ? INK : INK}">Py</text>`
+    },
+    {
+      id: "tip", name: "Stylus Tip", tag: "S Pen · palm-free",
+      iconBg: "#F3F4F8",
+      note: "An S Pen tip pulls an ink line that turns into a highlight. Says “made for the pen” more than any other mark here.",
+      mark: (ink) => `
+        <path d="M16 82H80" fill="none" stroke="${YEL}" stroke-width="11" stroke-linecap="round"/>
+        <path d="M33 61C27 71 20 72 14 80" fill="none" stroke="${ink}" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M78 8L88 18 44 62 31 66 34 53z" fill="${IND}"/>
+        <path d="M31 66l3-13 10 9z" fill="${ink === INK ? INK : "#C9CEE3"}"/>
+        <rect x="64" y="20" width="9" height="4" rx="2" transform="rotate(45 68.5 22)" fill="${IND2}"/>`
+    },
+  ];
+
+  const svg = (inner, size) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"${size ? ` width="${size}" height="${size}"` : ""} role="img">${inner}</svg>`;
+  const icon = (c, size) => svg(`<rect width="96" height="96" rx="22" fill="${c.iconBg}"/><g transform="translate(13.44 13.44) scale(.72)">${c.mark(c.iconBg === INK || c.iconBg === IND ? "#F2F4FF" : INK)}</g>`, size);
+
+  let picked = null;
+  try { picked = localStorage.getItem("pydf-logo-pick"); } catch (e) {}
+
+  const grid = document.getElementById("grid");
+  const ordered = [...concepts.filter(c => c.isNew), ...concepts.filter(c => !c.isNew)];
+  grid.innerHTML = ordered.map(c => `
+    <article class="card" id="${c.id}" data-id="${c.id}">
+      <div class="card-head"><h2>${c.name}${c.isNew ? ' <span class="new">new</span>' : ""}</h2><span class="tag">${c.tag}</span></div>
+      <div class="tiles">
+        <div class="tile light" aria-label="${c.name} on white">${svg(c.mark(INK))}</div>
+        <div class="tile dark" aria-label="${c.name} on black">${svg(c.mark("#F2F4FF"))}</div>
+      </div>
+      <div class="ladder">
+        ${[96, 48, 32, 24].map(s => `<figure>${icon(c, s)}<figcaption>${s} px</figcaption></figure>`).join("")}
+        <div class="lockup">${icon(c, 44)}<span class="wordmark">P<em>y</em>DF</span></div>
+      </div>
+      <p class="note">${c.note}</p>
+      <div class="actions">
+        <button class="pick" type="button" aria-pressed="false">Pick</button>
+        <button class="copy-icon" type="button">Copy SVG (icon)</button>
+        <button class="copy-mark" type="button">Copy SVG (mark only)</button>
+      </div>
+    </article>`).join("");
+
+  const pickedEl = document.getElementById("picked");
+  function renderPick() {
+    document.querySelectorAll(".card").forEach(card => {
+      const on = card.dataset.id === picked;
+      card.classList.toggle("is-picked", on);
+      card.querySelector(".pick").setAttribute("aria-pressed", String(on));
+      card.querySelector(".pick").textContent = on ? "Picked" : "Pick";
+    });
+    const c = concepts.find(c => c.id === picked);
+    pickedEl.innerHTML = c ? `Your pick: <b>${c.name}</b>. Tell Claude “use ${c.name}” to make it the app icon.` : "";
+  }
+
+  async function copy(text, btn) {
+    const label = btn.textContent;
+    try { await navigator.clipboard.writeText(text); btn.textContent = "Copied"; }
+    catch (e) {
+      const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
+      btn.textContent = "Selected, press Ctrl+C"; setTimeout(() => ta.remove(), 4000);
+    }
+    setTimeout(() => (btn.textContent = label), 1600);
+  }
+
+  grid.addEventListener("click", e => {
+    const btn = e.target.closest("button"); if (!btn) return;
+    const c = concepts.find(c => c.id === btn.closest(".card").dataset.id);
+    if (btn.classList.contains("pick")) {
+      picked = picked === c.id ? null : c.id;
+      try { picked ? localStorage.setItem("pydf-logo-pick", picked) : localStorage.removeItem("pydf-logo-pick"); } catch (err) {}
+      renderPick();
+    } else if (btn.classList.contains("copy-icon")) copy(icon(c), btn);
+    else if (btn.classList.contains("copy-mark")) copy(svg(c.mark(INK)), btn);
+  });
+
+  renderPick();
+})();
+</script>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PyDF launcher foreground: "Negative · P" (day/night split page, P flips colour across the cut). 96-unit mark inside the 108dp adaptive canvas. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <group android:translateX="28.08" android:translateY="28.08" android:scaleX="0.54" android:scaleY="0.54">
+        <group android:name="page">
+            <clip-path android:pathData="M24,8h34l18,18v56a6,6 0,0 1,-6 6H24a6,6 0,0 1,-6 -6V14a6,6 0,0 1,6 -6z"/>
+            <path android:fillColor="#FFFFFF" android:pathData="M0,0h96v96h-96z"/>
+            <path android:fillColor="#1B1F3B" android:pathData="M96,0L96,96L0,96Z"/>
+            <group android:name="day"><clip-path android:pathData="M0,0L96,0L0,96Z"/>
+                <path android:fillColor="#1B1F3B" android:fillType="evenOdd" android:pathData="M31,30H51A13,13 0,0 1,51 56H43V74H31Z M43,39V47H50A4,4 0,0 0,50 39Z"/></group>
+            <group android:name="night"><clip-path android:pathData="M96,0L96,96L0,96Z"/>
+                <path android:fillColor="#FFFFFF" android:fillType="evenOdd" android:pathData="M31,30H51A13,13 0,0 1,51 56H43V74H31Z M43,39V47H50A4,4 0,0 0,50 39Z"/></group>
+        </group>
+        <path android:fillColor="#8C9EFF" android:pathData="M58,8v12a6,6 0,0 0,6 6h12z"/>
+        <path android:strokeColor="#C9CEE3" android:strokeWidth="3" android:strokeLineJoin="round" android:pathData="M24,8h34l18,18v56a6,6 0,0 1,-6 6H24a6,6 0,0 1,-6 -6V14a6,6 0,0 1,6 -6z"/>
+    </group>
+</vector>
