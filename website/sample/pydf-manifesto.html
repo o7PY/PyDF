@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The PyDF Manifesto</title>
+<style>
+  @page { size: A4; margin: 22mm 20mm 20mm 20mm; }
+  :root { --ink:#1B1F3B; --ind:#3D5AFE; --peri:#8C9EFF; --yel:#FFD43B; --muted:#5B6280; --paper:#FFFFFF; --soft:#EEF0FB; }
+  * { box-sizing: border-box; }
+  body { font-family: "DejaVu Serif", Georgia, serif; color: var(--ink); font-size: 11.6pt; line-height: 1.55; margin: 0; }
+  h1, h2, h3, .kicker, .callout b, .stat b, th { font-family: "DejaVu Sans", "Noto Sans", Arial, sans-serif; }
+  h1 { font-size: 30pt; line-height: 1.05; margin: 0 0 6mm; letter-spacing: -0.5pt; }
+  h2 { font-size: 17pt; margin: 9mm 0 3mm; color: var(--ind); border-bottom: 1.5pt solid var(--soft); padding-bottom: 1.5mm; }
+  h3 { font-size: 12.5pt; margin: 6mm 0 2mm; }
+  p { margin: 0 0 3.2mm; text-align: justify; hyphens: auto; }
+  .page-break { break-before: page; }
+  .kicker { text-transform: uppercase; letter-spacing: 1.5pt; font-size: 9pt; color: var(--muted); margin-bottom: 3mm; }
+  .cover { height: 245mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .cover-band { background: var(--ind); color: #fff; border-radius: 6mm; padding: 14mm 12mm; }
+  .cover-band h1 { color: #fff; font-size: 40pt; }
+  .cover-band p { color: #E3E7FF; font-size: 13pt; text-align: left; }
+  .logo { width: 30mm; height: 30mm; margin-bottom: 8mm; }
+  .cover-foot { font-family: "DejaVu Sans", sans-serif; color: var(--muted); font-size: 10pt; display: flex; justify-content: space-between; }
+  .callout { background: var(--soft); border-radius: 3mm; padding: 4mm 5mm; margin: 4mm 0; }
+  .callout.yel { background: #FFF6CC; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; margin: 5mm 0; }
+  .stat { border: 1pt solid #DDE0EC; border-radius: 3mm; padding: 4mm; }
+  .stat b { display: block; font-size: 20pt; color: var(--ind); }
+  .stat span { font-family: "DejaVu Sans", sans-serif; font-size: 9pt; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin: 4mm 0; font-size: 10.5pt; }
+  th, td { text-align: left; padding: 2.4mm 3mm; border-bottom: 0.8pt solid #DDE0EC; }
+  th { background: var(--ink); color: #fff; font-size: 9.5pt; }
+  td.yes { color: #188038; font-weight: bold; } td.no { color: #D93025; }
+  ul { margin: 0 0 3mm 5mm; padding-left: 3mm; } li { margin-bottom: 1.5mm; }
+  blockquote { margin: 5mm 0; padding: 0 0 0 5mm; border-left: 2.5pt solid var(--yel); font-style: italic; font-size: 13pt; }
+  .sig { font-family: "DejaVu Sans", sans-serif; font-size: 10pt; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="cover-band">
+    <svg class="logo" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg"><rect width="96" height="96" rx="22" fill="#2A3FD1"/><g transform="translate(13.44 13.44) scale(.72)"><defs><clipPath id="pg"><path d="M24 8h34l18 18v56a6 6 0 0 1-6 6H24a6 6 0 0 1-6-6V14a6 6 0 0 1 6-6z"/></clipPath><clipPath id="tl"><polygon points="0,0 96,0 0,96"/></clipPath><clipPath id="br"><polygon points="96,0 96,96 0,96"/></clipPath></defs><g clip-path="url(#pg)"><rect width="96" height="96" fill="#fff"/><polygon points="96,0 96,96 0,96" fill="#1B1F3B"/><g clip-path="url(#tl)"><path fill-rule="evenodd" d="M31 30H51A13 13 0 0 1 51 56H43V74H31Z M43 39V47H50A4 4 0 0 0 50 39Z" fill="#1B1F3B"/></g><g clip-path="url(#br)"><path fill-rule="evenodd" d="M31 30H51A13 13 0 0 1 51 56H43V74H31Z M43 39V47H50A4 4 0 0 0 50 39Z" fill="#fff"/></g></g><path d="M58 8v12a6 6 0 0 0 6 6h12z" fill="#8C9EFF"/><path d="M24 8h34l18 18v56a6 6 0 0 1-6 6H24a6 6 0 0 1-6-6V14a6 6 0 0 1 6-6z" fill="none" stroke="#C9CEE3" stroke-width="3" stroke-linejoin="round"/></g></svg>
+    <div class="kicker" style="color:#C9D0FF">A completely unbiased document</div>
+    <h1>The PyDF Manifesto</h1>
+    <p>Why the best PDF app in the world fits in your pocket, ignores your palm, and never once asks for your email address.</p>
+  </div>
+  <div>
+    <div class="stats">
+      <div class="stat"><b>0</b><span>internet permissions</span></div>
+      <div class="stat"><b>0</b><span>accidental palm scribbles</span></div>
+      <div class="stat"><b>1</b><span>pen that reads your mind</span></div>
+    </div>
+    <div class="cover-foot"><span>PyDF 1.0 · Made for the S Pen</span><span>Six pages of pure, objective truth</span></div>
+  </div>
+</section>
+
+<section class="page-break">
+  <h2>1. The Problem With Every Other PDF App</h2>
+  <p>Picture this. You open a beautiful textbook on your tablet. You pick up your pen, rest your hand on the screen the way you have rested it on paper since you were six years old, and then the page leaps three chapters forward. A thick grey smear appears across the most important theorem. Your palm has betrayed you again.</p>
+  <p>For years we were told this was normal. We were told to float our wrists above the glass like nervous surgeons. We were told to wear special gloves. We were told to switch modes, open menus, tap tiny icons and then switch modes back again. Reading a document turned into a full-time job of managing the app that was supposed to help you read it.</p>
+  <p>PyDF exists because that is ridiculous. A PDF reader should disappear. It should let you read, think and scribble without ever making you wonder which button you pressed last. It should treat your hand like a hand and your pen like a pen.</p>
+  <h3>The three sins of ordinary readers</h3>
+  <ul>
+    <li><b>They cannot tell a palm from a finger.</b> So they scroll when you rest, zoom when you lean, and draw when you breathe.</li>
+    <li><b>They make you choose a tool for everything.</b> Highlight mode, pen mode, select mode, a mode for choosing modes.</li>
+    <li><b>They phone home.</b> Accounts, cloud sync, analytics and a cheerful banner asking you to rate them five stars.</li>
+  </ul>
+  <div class="callout"><b>The PyDF promise:</b> your palm is invisible to the page, your pen understands what you mean, and your documents never leave your device.</div>
+</section>
+
+<section class="page-break">
+  <h2>2. Palm Rejection That Actually Works</h2>
+  <p>Most apps guess. PyDF knows. It listens to the S Pen itself: whether it is hovering, touching, or holding its side button. While the pen is near the glass, fingers are simply ignored. A resting palm cannot scroll, cannot zoom, cannot select, and cannot leave a single stray mark. You can lean your entire forearm on the screen and write like it is a notebook.</p>
+  <p>When you do want to move, it is effortless. One finger or two fingers scroll the page smoothly, with a satisfying fling. Pinch to zoom up to five times, and the text stays razor sharp at every level. Tap the lock and zoom and rotation freeze in place, perfect for reading in bed without the page spinning every time you roll over.</p>
+  <blockquote>“I rested my hand on the screen for the first time in three years and nothing happened. I almost cried.”</blockquote>
+  <h3>Built on real hardware</h3>
+  <p>PyDF was tuned on a real Galaxy Tab with a real S Pen, through real late-night study sessions. Every threshold was tested with actual handwriting, actual palms and actual coffee. The result is an app that feels calm. Nothing jumps. Nothing surprises you. The page goes where you send it and nowhere else.</p>
+  <div class="callout yel"><b>Try it now:</b> rest your hand on this page and write a note in the margin. Then try to make PyDF scroll with your palm. You will fail. That is the point.</div>
+</section>
+
+<section class="page-break">
+  <h2>3. The Smart Pen</h2>
+  <p>Here is the magic trick. There is no highlighter mode. There is no pen mode. There is just the pen, and it figures out what you meant. Swipe along a line of text and PyDF turns your stroke into a crisp, perfectly snapped highlight that hugs the characters. Write a word in the margin, circle a formula or draw an arrow, and it stays as ink. You never stop to think about it.</p>
+  <p>Prefer to be explicit? Rest the pen on a word for a moment. You will feel a tiny tap, and everything you sweep through next becomes a highlight. Hold the side button and sweep across anything to erase whole strokes and highlights in one go. Undo and redo are always one tap away.</p>
+  <h3>What the pen understands</h3>
+  <table>
+    <tr><th>You do this</th><th>PyDF does this</th></tr>
+    <tr><td>Swipe along a line of text</td><td>Highlights it, snapped to the letters</td></tr>
+    <tr><td>Write, circle, underline, draw</td><td>Keeps it as pressure-sensitive ink</td></tr>
+    <tr><td>Rest on a word, then swipe</td><td>Highlights everything you sweep</td></tr>
+    <tr><td>Hold the side button and sweep</td><td>Erases whole strokes</td></tr>
+    <tr><td>Long-press a word with a finger</td><td>Select, copy or highlight in six colours</td></tr>
+  </table>
+  <p>Every highlight is saved as a real PDF annotation, so it shows up in any other reader. Open the file tomorrow and every stroke is still there, still editable, still yours.</p>
+</section>
+
+<section class="page-break">
+  <h2>4. Night Mode and Everything Else</h2>
+  <p>Reading at midnight should not feel like staring into the sun. One tap on the night mode button turns every page dark. Unlike a cheap negative, PyDF keeps colours meaningful: blue headings stay blue, green boxes stay green and your yellow highlights stay highlights. The file itself is never touched.</p>
+  <h3>The rest of the toolbox</h3>
+  <ul>
+    <li><b>Document outline.</b> Jump straight to any chapter or section from the sidebar. This very document has one. Go on, open it.</li>
+    <li><b>Page thumbnails.</b> Slide out the panel and leap to any page.</li>
+    <li><b>Scroll bar.</b> Switch it on and fly through a thousand pages with one drag.</li>
+    <li><b>Blank pages.</b> Insert a fresh page in seven paper colours, including a moody charcoal, for when the margins are not enough.</li>
+    <li><b>Crash-proof saving.</b> Unsaved work is kept automatically and offered back if anything goes wrong.</li>
+    <li><b>Remembers your place.</b> Close a document and come back to exactly where you left off.</li>
+  </ul>
+  <h3>How PyDF compares</h3>
+  <table>
+    <tr><th>Feature</th><th>PyDF</th><th>A typical reader</th></tr>
+    <tr><td>Palm never scrolls or draws</td><td class="yes">Yes</td><td class="no">Sometimes</td></tr>
+    <tr><td>Highlight without switching tools</td><td class="yes">Yes</td><td class="no">No</td></tr>
+    <tr><td>Works with no internet at all</td><td class="yes">Always</td><td class="no">Mostly</td></tr>
+    <tr><td>Asks you to create an account</td><td class="yes">Never</td><td class="no">Usually</td></tr>
+  </table>
+</section>
+
+<section class="page-break">
+  <h2>5. Totally, Completely, Stubbornly Offline</h2>
+  <p>PyDF does not have permission to use the internet. Not a little bit. Not for updates, not for crash reports, not for “anonymous usage statistics”. Android itself will not let it connect anywhere. Your documents, your handwriting and your highlights live on your device and nowhere else.</p>
+  <p>That means no accounts, no ads, no tracking, no cloud and no surprises. It works on a plane, in a basement, in a lecture hall with terrible Wi-Fi and on a mountain top. It works the same on day one as it will in ten years.</p>
+  <h2>6. In Conclusion</h2>
+  <p>We have looked at the evidence carefully and objectively, and the conclusion is unavoidable. PyDF is the best PDF app in the world. It is fast, it is calm, it understands your pen, it ignores your palm and it respects your privacy. Other apps have features. PyDF has manners.</p>
+  <blockquote>Rest your hand. Write like it is paper.</blockquote>
+  <p class="sig">Thank you for reading the PyDF Manifesto. Now go highlight this sentence with a single swipe and see for yourself.</p>
+</section>
+
+</body>
+</html>

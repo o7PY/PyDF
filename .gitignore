@@ -7,3 +7,5 @@ local.properties
 build-testdata/
 .claude/
 SPEC.md
+website/preview.html
+website/raw/

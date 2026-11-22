@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PyDF</title>
+<meta name="description" content="PyDF is a smart PDF annotator specialized for reading, made for Samsung tablets and phones with the S Pen. Palm rejection, smart pen highlighting, night mode, 100% offline.">
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#0D0F1E">
+<link rel="icon" href="assets/img/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=Caveat:wght@600&display=swap">
+<style>
+  /* Layout: bold product page. Full-width colour bands (paper → indigo → ink), alternating
+     copy/screenshot rows, a bento grid, and one interactive day/night comparison. */
+  :root {
+    --paper: #0D0F1E;        /* page background: deep ink */
+    --surface: #161A2E;      /* cards */
+    --ink: #ECEEFA;          /* primary text */
+    --ink-2: #B3B8D4;
+    --muted: #868CAD;
+    --line: #262B47;
+    --indigo: #3D5AFE;       /* app accent (fills) */
+    --indigo-deep: #2A3FD1;
+    --peri: #8C9EFF;         /* accent for text on dark */
+    --hl: #FFD43B;           /* highlighter */
+    --night: #05060C;
+    --deep: #080A16;
+    --on-dark: #ECEEFA;
+    --on-dark-muted: #A6ACCB;
+    --bezel: #1D2036;
+    --on-hl: #1B1F3B;
+    --font-display: "Bricolage Grotesque", "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+    --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-hand: "Caveat", "Segoe Print", "Comic Sans MS", cursive;
+    --radius: 22px;
+    --shadow: 0 30px 70px -26px rgba(0, 0, 0, .75), 0 10px 24px -12px rgba(0, 0, 0, .55);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font: 17px/1.6 var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--peri); outline-offset: 3px; border-radius: 8px; }
+  .wrap {
+    max-width: 1180px; margin: 0 auto;
+    padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px));
+  }
+  h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.02em; text-wrap: balance; margin: 0; }
+  h2 { font-size: clamp(34px, 5vw, 56px); line-height: 1.02; font-weight: 800; }
+  h3 { font-size: 22px; font-weight: 700; line-height: 1.2; }
+  p { margin: 0; }
+  .eyebrow { font: 600 13px/1 var(--font-body); letter-spacing: .12em; text-transform: uppercase; color: var(--peri); }
+  .lede { font-size: 19px; color: var(--ink-2); max-width: 56ch; }
+  mark { background: linear-gradient(transparent 74%, var(--hl) 74%, var(--hl) 94%, transparent 94%); color: inherit; padding: 0 .08em; }
+
+  /* ---------- nav ---------- */
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); background: rgba(13, 15, 30, .94); z-index: 60; }
+  .nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: rgba(13, 15, 30, .78); backdrop-filter: saturate(1.4) blur(14px); border-bottom: 1px solid transparent; transition: border-color .2s; }
+  .nav.scrolled { border-bottom-color: var(--line); }
+  .nav .wrap { display: flex; align-items: center; gap: 28px; height: 68px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 800 23px var(--font-display); letter-spacing: -0.02em; }
+  .brand img { width: 34px; height: 34px; }
+  .brand em { font-style: normal; color: var(--peri); }
+  .nav-links { display: flex; gap: 24px; margin-left: auto; font-weight: 500; font-size: 15px; }
+  .nav-links a { text-decoration: none; color: var(--ink-2); padding: 8px 2px; }
+  .nav-links a:hover { color: var(--ink); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 22px;
+    border-radius: 14px; font: 600 16px var(--font-body); text-decoration: none; cursor: pointer; border: 0;
+    transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+  }
+  .btn svg { width: 20px; height: 20px; flex: none; }
+  .btn-primary { background: var(--indigo); color: #fff; box-shadow: 0 10px 30px -8px rgba(61, 90, 254, .8); }
+  .btn-primary:hover { background: var(--indigo-deep); transform: translateY(-2px); }
+  .btn-ghost { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
+  .btn-ghost:hover { box-shadow: inset 0 0 0 1.5px var(--ink); }
+  .nav .btn { min-height: 42px; padding: 0 16px; font-size: 15px; }
+
+  /* ---------- hero ---------- */
+  .hero { padding-block: 64px 40px; overflow: hidden; background: radial-gradient(55% 60% at 80% 35%, rgba(61, 90, 254, .25), transparent 70%); }
+  .hero .wrap { display: grid; grid-template-columns: 1.05fr .95fr; gap: 40px; align-items: center; }
+  .hero h1 { font-size: clamp(46px, 7.2vw, 92px); line-height: .95; font-weight: 800; }
+  .hero h1 .pen { position: relative; white-space: nowrap; }
+  .hero h1 .pen svg { position: absolute; left: -2%; right: -2%; bottom: -.12em; width: 104%; height: .32em; overflow: visible; }
+  .hero h1 .pen path { stroke-dasharray: 640; stroke-dashoffset: 640; animation: draw 1.1s .5s ease-out forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .hero .tagline { margin-top: 26px; font-size: 21px; color: var(--ink-2); max-width: 30ch; }
+  .hero .tagline b { color: var(--ink); }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
+  .chip { display: inline-flex; align-items: center; gap: 7px; font: 500 14px var(--font-body); padding: 7px 12px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink-2); }
+  .chip svg { width: 16px; height: 16px; color: var(--peri); }
+  .hero-visual { position: relative; justify-self: center; width: min(100%, 470px); }
+  .tablet {
+    background: var(--bezel); border-radius: 34px; padding: 14px; box-shadow: var(--shadow), inset 0 0 0 1px rgba(255, 255, 255, .07);
+    position: relative;
+  }
+  .tablet::after { content: ""; position: absolute; top: 6px; left: 50%; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: #34385A; }
+  .tablet img { border-radius: 22px; width: 100%; }
+  .hero .tablet { transform: rotate(2.5deg); }
+  .float-card {
+    position: absolute; background: var(--surface); border-radius: 18px; box-shadow: var(--shadow); padding: 10px;
+  }
+  .float-card img { border-radius: 10px; }
+  .float-card .cap { font: 600 13px var(--font-body); color: var(--ink-2); padding: 8px 6px 2px; display: flex; align-items: center; gap: 6px; }
+  .float-card .cap i { width: 8px; height: 8px; border-radius: 50%; background: #E53935; animation: rec 1.4s infinite; }
+  @keyframes rec { 50% { opacity: .25; } }
+  .hero .float-card { left: -22%; bottom: 8%; width: 74%; transform: rotate(-3deg); }
+  .scribble { position: absolute; font: 600 30px/1 var(--font-hand); color: var(--hl); transform: rotate(-6deg); white-space: nowrap; }
+  .hero .scribble { right: -4%; top: -6%; }
+
+  /* ---------- proof strip ---------- */
+  .strip { padding-block: 34px; }
+  .strip .wrap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .stat { background: var(--surface); border-radius: 18px; padding: 20px 22px; box-shadow: inset 0 0 0 1px var(--line); }
+  .stat b { display: block; font: 800 40px/1 var(--font-display); color: var(--peri); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .stat span { display: block; margin-top: 8px; font-size: 15px; color: var(--ink-2); }
+
+  /* ---------- feature rows ---------- */
+  section.block { padding-block: 96px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+  .row.flip .copy { order: 2; }
+  .copy { display: grid; gap: 18px; min-width: 0; }
+  .ticks { list-style: none; padding: 0; margin: 6px 0 0; display: grid; gap: 12px; }
+  .ticks li { display: grid; grid-template-columns: 26px 1fr; gap: 10px; color: var(--ink-2); }
+  .ticks li b { color: var(--ink); }
+  .ticks svg { width: 22px; height: 22px; color: var(--peri); margin-top: 3px; }
+  .shot { position: relative; min-width: 0; }
+  .shot .tablet { max-width: 470px; margin-inline: auto; }
+  .gif-frame { background: var(--surface); border-radius: var(--radius); padding: 12px; box-shadow: var(--shadow); }
+  .gif-frame img { border-radius: 14px; width: 100%; }
+  .gif-label { display: flex; align-items: center; gap: 8px; font: 600 13px var(--font-body); color: var(--muted); padding: 10px 6px 2px; letter-spacing: .02em; }
+  .gif-label i { width: 8px; height: 8px; border-radius: 50%; background: #E53935; animation: rec 1.4s infinite; }
+
+  .gesture-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 8px; font-size: 15px; background: var(--surface); border-radius: 16px; overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); }
+  .gesture-table td { padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .gesture-table tr:last-child td { border-bottom: 0; }
+  .gesture-table td:first-child { color: var(--ink-2); }
+  .gesture-table td:last-child { font-weight: 600; }
+  .tag-hl { background: var(--hl); color: var(--on-hl); padding: 1px 6px; border-radius: 4px; }
+  .tag-ink { color: var(--peri); }
+
+  /* ---------- palm band ---------- */
+  .band-indigo { background: radial-gradient(120% 140% at 85% 0%, #4F69FF 0%, #3D5AFE 38%, #2436B8 100%); color: #fff; }
+  .band-indigo .eyebrow { color: var(--hl); }
+  .band-indigo .lede, .band-indigo .ticks li { color: #DCE1FF; }
+  .band-indigo .ticks li b { color: #fff; }
+  .band-indigo .ticks svg { color: var(--hl); }
+  .band-indigo .tablet { background: #101230; }
+  .palm-callout { margin-top: 10px; display: inline-flex; align-items: center; gap: 12px; background: rgba(255, 255, 255, .12); border-radius: 16px; padding: 14px 18px; font-weight: 500; }
+  .palm-callout svg { width: 34px; height: 34px; flex: none; color: var(--hl); }
+
+  /* ---------- bento ---------- */
+  .bento { display: grid; grid-template-columns: repeat(6, 1fr); gap: 18px; margin-top: 48px; }
+  .card { background: var(--surface); border-radius: var(--radius); padding: 26px; box-shadow: inset 0 0 0 1px var(--line); display: grid; gap: 12px; align-content: start; min-width: 0; }
+  .card p { color: var(--ink-2); font-size: 16px; }
+  .card .media { margin-top: 8px; border-radius: 14px; overflow: hidden; background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); }
+  .card .media img { width: 100%; }
+  .c-wide { grid-column: span 4; }
+  .c-tall { grid-column: span 2; grid-row: span 2; }
+  .c-half { grid-column: span 2; }
+  .c-third { grid-column: span 2; }
+  .icon-badge { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: rgba(140, 158, 255, .14); color: var(--peri); }
+  .icon-badge svg { width: 24px; height: 24px; }
+  .card.dark { background: linear-gradient(160deg, #1F2552, #141833); color: var(--on-dark); box-shadow: inset 0 0 0 1px rgba(140, 158, 255, .25); }
+  .card.dark p { color: var(--on-dark-muted); }
+  .card.dark .icon-badge { background: rgba(255, 255, 255, .1); color: var(--hl); }
+  .swatches { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .swatches span { width: 26px; height: 26px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .15); }
+
+  /* ---------- night ---------- */
+  .band-night { background: radial-gradient(90% 120% at 15% 10%, #141836 0%, var(--night) 60%); color: var(--on-dark); }
+  .band-night .eyebrow { color: var(--peri); }
+  .band-night .lede { color: var(--on-dark-muted); }
+  .compare { position: relative; max-width: 470px; margin-inline: auto; }
+  .compare .tablet { background: #05060D; }
+  .compare-viewport { position: relative; border-radius: 22px; overflow: hidden; }
+  .compare-viewport img { border-radius: 0; }
+  .compare-viewport .night-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; clip-path: inset(0 0 0 var(--pos, 50%)); }
+  .compare-handle { position: absolute; top: 0; bottom: 0; left: var(--pos, 50%); width: 3px; margin-left: -1.5px; background: var(--hl); pointer-events: none; }
+  .compare-handle::after { content: ""; position: absolute; top: 50%; left: 50%; width: 42px; height: 42px; margin: -21px 0 0 -21px; border-radius: 50%; background: var(--hl); box-shadow: 0 6px 18px rgba(0, 0, 0, .35); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231B1F3B' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6l-6 6 6 6M15 6l6 6-6 6'/%3E%3C/svg%3E"); background-size: 24px; background-repeat: no-repeat; background-position: center; }
+  .compare input[type=range] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; margin: 0; }
+  .compare-labels { display: flex; justify-content: space-between; margin-top: 14px; font: 600 13px var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--on-dark-muted); }
+  .night-gif { margin-top: 26px; display: flex; gap: 16px; align-items: center; background: rgba(255, 255, 255, .06); border-radius: 18px; padding: 12px; }
+  .night-gif img { width: 128px; border-radius: 10px; flex: none; }
+  .night-gif p { color: var(--on-dark-muted); font-size: 15px; }
+  .night-gif b { color: var(--on-dark); }
+
+  /* ---------- reading tools ---------- */
+  .trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; margin-top: 52px; }
+  .trio figure { margin: 0; display: grid; gap: 16px; min-width: 0; }
+  .trio .tablet { padding: 10px; border-radius: 26px; }
+  .trio .tablet img { border-radius: 16px; }
+  .trio figcaption h3 { font-size: 20px; }
+  .trio figcaption p { color: var(--ink-2); font-size: 15.5px; margin-top: 6px; }
+
+  /* ---------- offline ---------- */
+  .band-ink { background: var(--deep); color: var(--on-dark); border-block: 1px solid var(--line); }
+  .offline { display: grid; grid-template-columns: 1.1fr .9fr; gap: 56px; align-items: center; }
+  .offline .big { font: 800 clamp(64px, 11vw, 150px)/0.86 var(--font-display); letter-spacing: -0.04em; }
+  .offline .big span { color: var(--hl); }
+  .offline .lede { color: var(--on-dark-muted); margin-top: 22px; }
+  .nolist { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .nolist li { display: flex; align-items: center; gap: 14px; background: rgba(255, 255, 255, .06); border-radius: 14px; padding: 14px 18px; font-weight: 500; }
+  .nolist svg { width: 22px; height: 22px; color: #FF8A80; flex: none; }
+  .nolist li.yes svg { color: #69F0AE; }
+
+  /* ---------- device ---------- */
+  .devices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 40px; }
+  .dev { background: var(--surface); border-radius: 20px; padding: 24px; box-shadow: inset 0 0 0 1px var(--line); display: grid; gap: 10px; }
+  .dev .ok { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: #69F0AE; font-size: 14px; }
+  .dev .ok.no { color: #FF8A80; }
+  .dev .ok svg { width: 18px; height: 18px; }
+  .dev p { color: var(--ink-2); font-size: 15.5px; }
+
+  /* ---------- final cta ---------- */
+  .final { text-align: center; padding-block: 110px; position: relative; overflow: hidden; background: radial-gradient(60% 70% at 50% 30%, rgba(61, 90, 254, .22), transparent 70%); }
+  .final h2 { font-size: clamp(42px, 7vw, 84px); }
+  .final .lede { margin: 22px auto 0; }
+  .final .cta-row { justify-content: center; }
+  .final .icon-big { width: 96px; height: 96px; margin: 0 auto 28px; filter: drop-shadow(0 18px 30px rgba(61, 90, 254, .35)); }
+  .steps { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px 28px; margin-top: 30px; color: var(--ink-2); font-size: 15px; }
+  .steps span { display: inline-flex; align-items: center; gap: 8px; }
+  .steps b { width: 26px; height: 26px; border-radius: 50%; display: inline-grid; place-items: center; background: var(--indigo); color: #fff; font-size: 13px; }
+
+  footer { border-top: 1px solid var(--line); padding-block: 34px; font-size: 14px; color: var(--muted); }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; justify-content: space-between; }
+  footer a { color: var(--ink-2); }
+  .stack { font-size: 13px; }
+
+  /* ---------- reveal ---------- */
+  .reveal { transition: opacity .6s ease, transform .6s ease; }
+  .js .reveal:not(.in) { opacity: .001; transform: translateY(22px); }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 980px) {
+    .hero .wrap, .row, .offline { grid-template-columns: 1fr; gap: 44px; }
+    .row.flip .copy { order: 0; }
+    .hero-visual { width: min(86%, 420px); }
+    .strip .wrap { grid-template-columns: repeat(2, 1fr); }
+    .bento { grid-template-columns: repeat(2, 1fr); }
+    .c-wide, .c-tall, .c-half, .c-third { grid-column: span 2; grid-row: auto; }
+    .trio, .devices { grid-template-columns: 1fr; max-width: 520px; margin-inline: auto; }
+    .nav-links { display: none; }
+    .nav .btn { margin-left: auto; }
+    section.block { padding-block: 72px; }
+  }
+  @media (max-width: 520px) {
+    body { font-size: 16px; }
+    .hero { padding-block: 40px 24px; }
+    .hero .float-card { left: -8%; width: 80%; bottom: -4%; }
+    .hero .scribble { font-size: 24px; right: 0; top: -9%; }
+    .stat b { font-size: 32px; }
+    .btn { width: 100%; }
+    .nav .btn { width: auto; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .hero h1 .pen path { animation: none; stroke-dashoffset: 0; }
+    .reveal, .js .reveal:not(.in) { transition: none; opacity: 1; transform: none; }
+    .btn { transition: none; }
+    .float-card .cap i, .gif-label i { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.73-1.54-2.56-.29-5.25-1.28-5.25-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.27 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5l4 4L8 20H4v-4z"/><path d="M14 6l4 4"/></symbol>
+    <symbol id="i-hand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12M11 11.5v-7a1.5 1.5 0 0 1 3 0V12M14 6.5a1.5 1.5 0 0 1 3 0V13M17 9.5a1.5 1.5 0 0 1 3 0V15a7 7 0 0 1-7 7h-1.2a6 6 0 0 1-4.6-2.2L4 16.5a1.6 1.6 0 0 1 2.5-2l1.5 1.5"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></symbol>
+    <symbol id="i-wifioff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M8.5 16.4a5 5 0 0 1 7 0M5 12.9a10 10 0 0 1 4.2-2.4M19 12.9a10 10 0 0 0-2.7-1.8M2 9.3a15 15 0 0 1 4.3-2.8M22 9.3A15 15 0 0 0 11 5.1"/><circle cx="12" cy="20" r=".8" fill="currentColor"/></symbol>
+    <symbol id="i-select" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2"/><path d="M8 12h8M8 9h5M8 15h6"/></symbol>
+    <symbol id="i-pages" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="13" height="16" rx="2"/><path d="M4 7v12a2 2 0 0 0 2 2h10"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.6-.8 1.6-1.6 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1" fill="currentColor"/><circle cx="10" cy="7" r="1" fill="currentColor"/><circle cx="14.5" cy="7" r="1" fill="currentColor"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-tablet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2.5" width="16" height="19" rx="2.5"/><path d="M11 18.5h2"/></symbol>
+  </defs>
+</svg>
+
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="PyDF home"><img src="assets/img/icon.svg" alt="" width="34" height="34"><span>P<em>y</em>DF</span></a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#smart-pen">Smart pen</a>
+      <a href="#palm">Palm rejection</a>
+      <a href="#night">Night mode</a>
+      <a href="#offline">Offline</a>
+      <a href="#devices">Devices</a>
+    </nav>
+    <a class="btn btn-primary" href="https://github.com/o7PY/PyDF/releases/latest/download/PyDF-v1.0.0.apk"><svg><use href="#i-download"/></svg>Download</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow">For Samsung S Pen tablets &amp; phones</div>
+        <h1 style="margin-top:18px">Rest your hand.<br>Write like it's <span class="pen">paper.<svg viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><path d="M4 20 C 70 8, 150 26, 296 12" fill="none" stroke="#FFD43B" stroke-width="12" stroke-linecap="round"/></svg></span></h1>
+        <p class="tagline"><b>A Smart PDF annotator specialized for reading.</b> Your palm never draws, never scrolls, never zooms. The pen just writes.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="https://github.com/o7PY/PyDF/releases/latest/download/PyDF-v1.0.0.apk"><svg><use href="#i-download"/></svg>Download APK · free</a>
+          <a class="btn btn-ghost" href="https://github.com/o7PY/PyDF"><svg><use href="#i-github"/></svg>View on GitHub</a>
+        </div>
+        <div class="chips">
+          <span class="chip"><svg><use href="#i-wifioff"/></svg>100% offline</span>
+          <span class="chip"><svg><use href="#i-pen"/></svg>S Pen only</span>
+          <span class="chip"><svg><use href="#i-shield"/></svg>No account, no ads</span>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="tablet"><img src="assets/img/annotate.webp" alt="PyDF on a Galaxy Tab: a page with a yellow highlight, a circled phrase, an arrow and a handwritten 10/10 with a star" width="900" height="1410" fetchpriority="high"></div>
+        <div class="float-card" aria-hidden="true">
+          <img src="assets/img/handwriting.gif" alt="" width="560" height="298">
+          <div class="cap"><i></i>Live ink, recorded on device</div>
+        </div>
+        <div class="scribble" aria-hidden="true">no palm marks!</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROOF -->
+  <section class="strip" aria-label="PyDF at a glance">
+    <div class="wrap">
+      <div class="stat reveal"><b>0</b><span>internet permissions. It literally can't go online.</span></div>
+      <div class="stat reveal"><b>0</b><span>stray marks from a resting palm</span></div>
+      <div class="stat reveal"><b>1</b><span>pen that knows highlight from handwriting</span></div>
+      <div class="stat reveal"><b>5×</b><span>pinch zoom with razor-sharp text</span></div>
+    </div>
+  </section>
+
+  <!-- SMART PEN -->
+  <section class="block" id="smart-pen">
+    <div class="wrap row">
+      <div class="copy reveal">
+        <div class="eyebrow">The Smart Pen</div>
+        <h2>One pen. It knows what you <mark>mean</mark>.</h2>
+        <p class="lede">There's no highlighter mode and no pen mode. Swipe along a line of text and it turns into a crisp highlight snapped to the letters. Write anywhere else and it stays ink.</p>
+        <table class="gesture-table">
+          <tbody>
+            <tr><td>Swipe along a line of text</td><td><span class="tag-hl">Highlight</span></td></tr>
+            <tr><td>Write, circle, underline, draw</td><td class="tag-ink">Ink</td></tr>
+            <tr><td>Rest the pen on a word, then sweep</td><td><span class="tag-hl">Highlight</span> everything</td></tr>
+            <tr><td>Hold the S Pen button and sweep</td><td>Erase whole strokes</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="shot reveal">
+        <div class="gif-frame">
+          <img src="assets/img/smart-highlight.gif" alt="Animation: the pen sweeps along two lines of text, which turn into a pink highlight, then a handwritten checkmark stays as ink" width="720" height="312" loading="lazy">
+          <div class="gif-label"><i></i>Recorded on a Galaxy Tab S6 Lite</div>
+        </div>
+        <div class="scribble" style="right:4%;bottom:-48px" aria-hidden="true">swipe = highlight ✓</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PALM -->
+  <section class="block band-indigo" id="palm">
+    <div class="wrap row flip">
+      <div class="copy reveal">
+        <div class="eyebrow">Palm rejection</div>
+        <h2>Your palm is invisible to the page.</h2>
+        <p class="lede">PyDF listens to the S Pen itself: hovering, touching, holding its button. While the pen is near the glass, fingers are ignored. Lean your whole hand on the screen and write like it's a notebook.</p>
+        <ul class="ticks">
+          <li><svg><use href="#i-check"/></svg><span><b>Never draws, scrolls or zooms</b> from a resting hand</span></li>
+          <li><svg><use href="#i-check"/></svg><span><b>One or two fingers scroll</b> smoothly, with fling</span></li>
+          <li><svg><use href="#i-check"/></svg><span><b>Pressure-sensitive ink</b> that follows the tip without lag</span></li>
+        </ul>
+        <div class="palm-callout"><svg><use href="#i-hand"/></svg>Tuned on real hardware, through real late-night study sessions.</div>
+      </div>
+      <div class="shot reveal">
+        <div class="tablet"><img src="assets/img/cover.webp" alt="The PyDF Manifesto cover page open in PyDF in portrait" width="900" height="1410" loading="lazy"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BENTO -->
+  <section class="block" id="features">
+    <div class="wrap">
+      <div class="reveal" style="display:grid;gap:16px;max-width:760px">
+        <div class="eyebrow">Everything you need, nothing you don't</div>
+        <h2>Small app. Big manners.</h2>
+      </div>
+      <div class="bento">
+        <article class="card c-wide reveal">
+          <span class="icon-badge"><svg><use href="#i-select"/></svg></span>
+          <h3>Long-press to select, Edge-style</h3>
+          <p>Hold a word with your finger, drag the handles, then highlight in six colours, copy the text, or select the whole page.</p>
+          <div class="media"><img src="assets/img/select-crop.webp" alt="A text selection with blue handles and a floating bar with six highlight colours, Copy and Select all" width="900" height="390" loading="lazy"></div>
+        </article>
+        <article class="card c-tall reveal">
+          <span class="icon-badge"><svg><use href="#i-palette"/></svg></span>
+          <h3>Your colours</h3>
+          <p>Eight ink colours, four widths and six highlight shades, with a live preview.</p>
+          <div class="media"><img src="assets/img/popover-crop.webp" alt="The pen settings popover with colour swatches, widths and highlight colours" width="500" height="700" loading="lazy"></div>
+        </article>
+        <article class="card c-half reveal">
+          <span class="icon-badge"><svg><use href="#i-pages"/></svg></span>
+          <h3>Room to think</h3>
+          <p>Insert blank pages before, after or at the end, in seven paper colours, including a moody charcoal.</p>
+          <div class="media"><img src="assets/img/insert-crop.webp" alt="The insert blank page sheet with seven background colours" width="735" height="435" loading="lazy"></div>
+        </article>
+        <article class="card c-third reveal dark">
+          <span class="icon-badge"><svg><use href="#i-shield"/></svg></span>
+          <h3>Your work is safe</h3>
+          <p>Annotations save as standard PDF annotations, so they show up in any viewer. Atomic saves, crash recovery, and undo for everything.</p>
+          <div class="swatches" aria-hidden="true"><span style="background:#FFEB3B"></span><span style="background:#69F0AE"></span><span style="background:#64B5F6"></span><span style="background:#FF80AB"></span><span style="background:#FFB74D"></span><span style="background:#B39DDB"></span></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- NIGHT -->
+  <section class="block band-night" id="night">
+    <div class="wrap row">
+      <div class="copy reveal">
+        <div class="eyebrow">Night mode</div>
+        <h2>Midnight reading, minus the sunburn.</h2>
+        <p class="lede">One tap turns every page dark. Unlike a cheap negative, colours keep their meaning: blue headings stay blue, your highlights stay highlights. The file itself is never touched.</p>
+        <div class="night-gif">
+          <img src="assets/img/night-toggle.gif" alt="Animation: night mode toggles on and off with one tap" width="480" height="560" loading="lazy">
+          <p><b>Instant.</b> No reloading and no waiting. Drag the slider on the right to compare day and night on the same page.</p>
+        </div>
+      </div>
+      <div class="shot reveal">
+        <div class="compare" id="compare" style="--pos:50%">
+          <div class="tablet">
+            <div class="compare-viewport">
+              <img src="assets/img/annotate.webp" alt="Page in day mode" width="900" height="1410" loading="lazy">
+              <img class="night-img" src="assets/img/night.webp" alt="The same page in night mode" width="900" height="1410" loading="lazy">
+              <div class="compare-handle" aria-hidden="true"></div>
+              <label class="sr" for="compare-range" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Compare day and night mode</label>
+              <input id="compare-range" type="range" min="0" max="100" value="50" aria-label="Compare day and night mode">
+            </div>
+          </div>
+          <div class="compare-labels"><span>Day</span><span>Night</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- READING TOOLS -->
+  <section class="block" id="reading">
+    <div class="wrap">
+      <div class="reveal" style="display:grid;gap:16px;max-width:760px">
+        <div class="eyebrow">Built for long reads</div>
+        <h2>Find your way through 300 pages.</h2>
+        <p class="lede">Jump straight to any chapter, skim page thumbnails, or switch on a scroll bar and fly. Lock zoom and rotation for reading in bed.</p>
+      </div>
+      <div class="trio">
+        <figure class="reveal">
+          <div class="tablet"><img src="assets/img/outline.webp" alt="The sidebar Outline tab listing every chapter and section with page numbers" width="900" height="1410" loading="lazy"></div>
+          <figcaption><h3>Document outline</h3><p>Every chapter and section in the sidebar, with the one you're reading highlighted.</p></figcaption>
+        </figure>
+        <figure class="reveal">
+          <div class="tablet"><img src="assets/img/pages.webp" alt="The sidebar Pages tab with page thumbnails that include annotations" width="900" height="1410" loading="lazy"></div>
+          <figcaption><h3>Page thumbnails</h3><p>See every page at a glance, annotations included. Tap to jump.</p></figcaption>
+        </figure>
+        <figure class="reveal">
+          <div class="tablet"><img src="assets/img/focus.webp" alt="The toolbar with the lock and scroll bar buttons switched on, and a scroll thumb on the right edge" width="900" height="1410" loading="lazy"></div>
+          <figcaption><h3>Lock &amp; scroll bar</h3><p>Freeze zoom and rotation with one tap, and drag the scroll bar to move fast.</p></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- OFFLINE -->
+  <section class="block band-ink" id="offline">
+    <div class="wrap offline">
+      <div class="reveal">
+        <div class="eyebrow" style="color:var(--hl)">Privacy</div>
+        <div class="big" style="margin-top:18px">100%<br><span>offline.</span></div>
+        <p class="lede">PyDF has no internet permission. Android won't let it connect anywhere, even if it wanted to. Your documents and your notes stay on your device. Full stop.</p>
+      </div>
+      <ul class="nolist reveal" aria-label="What PyDF does not have">
+        <li><svg><use href="#i-x"/></svg>No accounts</li>
+        <li><svg><use href="#i-x"/></svg>No ads</li>
+        <li><svg><use href="#i-x"/></svg>No analytics or tracking</li>
+        <li><svg><use href="#i-x"/></svg>No cloud</li>
+        <li class="yes"><svg><use href="#i-check"/></svg>Works on a plane, in a basement, anywhere</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- DEVICES -->
+  <section class="block" id="devices">
+    <div class="wrap">
+      <div class="reveal" style="display:grid;gap:16px;max-width:760px">
+        <div class="eyebrow">Compatibility</div>
+        <h2>Made for the S Pen. Only the S Pen.</h2>
+        <p class="lede">PyDF is built exclusively around Samsung's magnetic, battery-free S Pen, including its hover and its side button. Palm rejection and the smart pen depend on it.</p>
+      </div>
+      <div class="devices">
+        <div class="dev reveal"><span class="ok"><svg><use href="#i-check"/></svg>Supported</span><h3>Galaxy Tab with S Pen</h3><p>Designed and tuned on the Galaxy Tab S6 Lite.</p></div>
+        <div class="dev reveal"><span class="ok"><svg><use href="#i-check"/></svg>Supported</span><h3>Galaxy phones with S Pen</h3><p>Galaxy Note series and Galaxy S Ultra. Android 11 or newer.</p></div>
+        <div class="dev reveal"><span class="ok no"><svg><use href="#i-x"/></svg>Not supported</span><h3>Everything else</h3><p>Devices without an S Pen, capacitive or universal styluses, and Bluetooth-only pens.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final">
+    <div class="wrap">
+      <img class="icon-big" src="assets/img/icon.svg" alt="" width="96" height="96">
+      <h2>Your best reading app<br>is one tap away.</h2>
+      <p class="lede">Free, open source, and yours. No sign-up, no subscription.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/o7PY/PyDF/releases/latest/download/PyDF-v1.0.0.apk"><svg><use href="#i-download"/></svg>Download PyDF 1.0</a>
+        <a class="btn btn-ghost" href="https://github.com/o7PY/PyDF/releases/latest"><svg><use href="#i-github"/></svg>Release notes</a>
+      </div>
+      <div class="steps">
+        <span><b>1</b>Download the APK on your Galaxy</span>
+        <span><b>2</b>Allow installing when Android asks</span>
+        <span><b>3</b>Open any PDF</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 PyDF · Open source under the <a href="https://github.com/o7PY/PyDF/blob/main/LICENSE">AGPL v3</a> · PDF rendering by <a href="https://mupdf.com">MuPDF</a></span>
+    <span class="stack">Built with Kotlin, Jetpack Compose &amp; MuPDF</span>
+  </div>
+</footer>
+
+<script>
+(() => {
+  document.documentElement.classList.add("js");
+  const nav = document.getElementById("nav");
+  const onScroll = () => nav.classList.toggle("scrolled", window.scrollY > 8);
+  onScroll(); window.addEventListener("scroll", onScroll, { passive: true });
+
+  // Reveal on scroll; anything already in view (or without IntersectionObserver) shows at once.
+  const items = document.querySelectorAll(".reveal");
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -8% 0px" });
+    items.forEach(el => io.observe(el));
+    setTimeout(() => items.forEach(el => el.classList.add("in")), 2500); // never leave content hidden
+  } else items.forEach(el => el.classList.add("in"));
+
+  // Day / night comparison slider
+  const cmp = document.getElementById("compare");
+  const range = document.getElementById("compare-range");
+  if (cmp && range) range.addEventListener("input", () => cmp.style.setProperty("--pos", range.value + "%"));
+})();
+</script>
+</body>
+</html>
