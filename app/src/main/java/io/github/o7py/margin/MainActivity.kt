@@ -53,6 +53,21 @@ class MainActivity : ComponentActivity() {
     private lateinit var root: FrameLayout
     private var debugView: InputDebugView? = null
     private var saveCopySwitch = false
+    /** Immersive reading: the navigation bar is hidden while a document is open. */
+    private var immersive = false
+
+    private fun applySystemBars() {
+        val c = androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
+        c.systemBarsBehavior = androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        val nav = androidx.core.view.WindowInsetsCompat.Type.navigationBars()
+        if (immersive) c.hide(nav) else c.show(nav)
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        // dialogs, the file picker and the keyboard can bring the bar back: hide it again
+        if (hasFocus) applySystemBars()
+    }
 
     private val openPdf = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) { controller.takePermission(uri); controller.open(uri) }
@@ -149,6 +164,8 @@ class MainActivity : ComponentActivity() {
         LaunchedEffect(docOpen) { if (docOpen && screen == Screen.HOME) screen = Screen.READER }
         LaunchedEffect(screen, docOpen) {
             canvas.visibility = if (screen == Screen.READER && docOpen) View.VISIBLE else View.GONE
+            immersive = screen == Screen.READER && docOpen
+            applySystemBars()
         }
         // Lock: keep the current orientation while reading
         LaunchedEffect(ui.locked, screen) {
