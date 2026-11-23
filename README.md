@@ -47,6 +47,7 @@ Then it goes further. The pen understands what you mean. Swipe along a line of t
 - **Scroll bar:** switch on a draggable scroll bar to fly through long documents.
 - **Document outline:** jump straight to any chapter or section from the sidebar.
 - **Page thumbnails** in a slide-out panel.
+- **Fullscreen:** hide every bar and read edge to edge. Swipe in from the side to bring up a floating toolbar.
 - **Remembers your place** in every document.
 
 ### 🌙 Night mode
@@ -85,7 +86,7 @@ Your documents and your notes stay on your device. Full stop.
 
 ## Get it
 
-1. Download **`PyDF-v1.0.0.apk`** from the [latest release](https://github.com/o7PY/PyDF/releases/latest).
+1. Download **[`PyDF.apk`](https://github.com/o7PY/PyDF/releases/latest/download/PyDF.apk)** from the [latest release](https://github.com/o7PY/PyDF/releases/latest).
 2. Open it on your tablet and allow installing from this source when Android asks.
 3. Open any PDF, from the app or with **Open with → PyDF** in your file manager.
 
