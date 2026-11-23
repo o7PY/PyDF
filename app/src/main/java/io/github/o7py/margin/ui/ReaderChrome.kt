@@ -49,6 +49,8 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.Fullscreen
+import androidx.compose.material.icons.rounded.FullscreenExit
 import androidx.compose.material.icons.rounded.InvertColors
 import androidx.compose.material.icons.rounded.LockOpen
 import androidx.compose.material.icons.rounded.ContentCopy
@@ -146,6 +148,15 @@ fun ReaderChrome(
     var barHeightPx by remember { mutableIntStateOf(0) }
     val barHeight = with(density) { barHeightPx.toDp() }
     val panelWidth = 196.dp
+    val full = ui.fullscreen
+    // entering fullscreen hides everything, including the page panel
+    LaunchedEffect(full) { if (full) { panelOpen = false; popoverTool = null; controller.canvas.setTopInset(0f) } }
+    val bump by controller.floatingBump.collectAsState()
+    // the floating toolbar hides itself after a quiet period (not while a popover is open)
+    LaunchedEffect(ui.floatingBar, bump, popoverTool, panelOpen) {
+        if (ui.floatingBar && popoverTool == null && !panelOpen) { kotlinx.coroutines.delay(4500); controller.hideFloatingBar() }
+    }
+    val topPad = if (full) 0.dp else barHeight
     val panelVisible = panelOpen && ui.pages.isNotEmpty()
     LaunchedEffect(panelVisible) {
         controller.canvas.setLeftInset(if (panelVisible) with(density) { panelWidth.roundToPx() } else 0)
@@ -156,7 +167,7 @@ fun ReaderChrome(
         AnimatedVisibility(
             visible = panelOpen && ui.pages.isNotEmpty(),
             enter = slideInHorizontally(tween(dur)) { -it }, exit = slideOutHorizontally(tween(dur)) { -it },
-            modifier = Modifier.align(Alignment.TopStart).padding(top = barHeight),
+            modifier = Modifier.align(Alignment.TopStart).padding(top = topPad),
         ) {
             PagePanel(
                 controller, ui.pages, ui.currentPage, ui.outline,
@@ -165,33 +176,48 @@ fun ReaderChrome(
             )
         }
 
-        // ---------------- the one toolbar
-        Box(
-            Modifier.align(Alignment.TopCenter).fillMaxWidth().onSizeChanged { sz ->
-                barHeightPx = sz.height
-                controller.canvas.setTopInset(sz.height.toFloat())
-            },
-        ) {
+        // ---------------- the one toolbar (docked) / floating toolbar (fullscreen)
+        val toolbar: @Composable (Boolean) -> Unit = { floating ->
             Toolbar(
-                ui = ui, tools = tools,
+                ui = ui, tools = tools, floating = floating,
+                onFullscreen = controller::toggleFullscreen,
                 onBack = onBack,
                 onTool = { t ->
+                    controller.floatingBump.value++
                     if (t == ui.tool && t != Tool.ERASER) popoverTool = if (popoverTool == t) null else t
                     else { controller.setTool(t); popoverTool = null }
                 },
-                onLock = controller::toggleLock,
-                onUndo = controller::undo,
-                onRedo = controller::redo,
+                onLock = { controller.floatingBump.value++; controller.toggleLock() },
+                onUndo = { controller.floatingBump.value++; controller.undo() },
+                onRedo = { controller.floatingBump.value++; controller.redo() },
                 onTogglePanel = { panelOpen = !panelOpen },
                 onSave = controller::save,
                 onSaveCopy = onSaveCopy,
                 onInsert = { insertSheet = InsertRequest(ui.currentPage + 1, ui.currentPage) },
                 onAbout = { about = true },
                 onTuning = onOpenTuning,
-                onScrollbar = controller::toggleScrollbar,
-                onNight = controller::toggleNight,
+                onScrollbar = { controller.floatingBump.value++; controller.toggleScrollbar() },
+                onNight = { controller.floatingBump.value++; controller.toggleNight() },
             )
-            if (ui.saving) LinearProgressIndicator(Modifier.fillMaxWidth().align(Alignment.BottomCenter))
+        }
+        if (!full) {
+            Box(
+                Modifier.align(Alignment.TopCenter).fillMaxWidth().onSizeChanged { sz ->
+                    barHeightPx = sz.height
+                    controller.canvas.setTopInset(sz.height.toFloat())
+                },
+            ) {
+                toolbar(false)
+                if (ui.saving) LinearProgressIndicator(Modifier.fillMaxWidth().align(Alignment.BottomCenter))
+            }
+        } else {
+            AnimatedVisibility(
+                visible = ui.floatingBar,
+                enter = slideInVertically(tween(dur)) { -it } + fadeIn(tween(dur)),
+                exit = slideOutVertically(tween(dur)) { -it } + fadeOut(tween(dur)),
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = 12.dp, start = 16.dp, end = 16.dp)
+                    .onSizeChanged { sz -> barHeightPx = sz.height + with(density) { 12.dp.roundToPx() } },
+            ) { toolbar(true) }
         }
         popoverTool?.let { t ->
             ToolPopover(
@@ -204,7 +230,7 @@ fun ReaderChrome(
         // ---------------- text selection menu (Edge style)
         ui.selection?.let { sel ->
             SelectionMenu(
-                sel = sel, minTopPx = barHeightPx,
+                sel = sel, minTopPx = if (full && !ui.floatingBar) 0 else barHeightPx,
                 onHighlight = controller::highlightSelection,
                 onCopy = controller::copySelection,
                 onSelectAll = controller::selectAll,
@@ -217,7 +243,7 @@ fun ReaderChrome(
             Surface(
                 shape = RoundedCornerShape(16.dp), tonalElevation = 3.dp, shadowElevation = 6.dp,
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                modifier = Modifier.align(Alignment.TopCenter).padding(top = barHeight + 12.dp).widthIn(max = 560.dp).padding(horizontal = 16.dp),
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = topPad + 12.dp).widthIn(max = 560.dp).padding(horizontal = 16.dp),
             ) {
                 Row(Modifier.padding(start = 20.dp, end = 8.dp, top = 6.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text("Restore unsaved changes?", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
@@ -304,15 +330,20 @@ data class InsertRequest(val at: Int, val relativeTo: Int, val fixed: Boolean = 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Toolbar(
-    ui: ReaderUi, tools: ToolPrefs,
+    ui: ReaderUi, tools: ToolPrefs, floating: Boolean, onFullscreen: () -> Unit,
     onBack: () -> Unit, onTool: (Tool) -> Unit, onLock: () -> Unit, onUndo: () -> Unit, onRedo: () -> Unit, onTogglePanel: () -> Unit,
     onSave: () -> Unit, onSaveCopy: () -> Unit, onInsert: () -> Unit, onAbout: () -> Unit, onTuning: () -> Unit,
     onScrollbar: () -> Unit, onNight: () -> Unit,
 ) {
     var menu by remember { mutableStateOf(false) }
-    Surface(color = MaterialTheme.colorScheme.surfaceContainer, shadowElevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        shadowElevation = if (floating) 10.dp else 2.dp,
+        shape = if (floating) RoundedCornerShape(28.dp) else androidx.compose.ui.graphics.RectangleShape,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
         Row(
-            Modifier.statusBarsPadding().fillMaxWidth().height(TopBarHeight).padding(horizontal = 4.dp),
+            (if (floating) Modifier else Modifier.statusBarsPadding()).fillMaxWidth().height(TopBarHeight).padding(horizontal = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onBack, Modifier.size(48.dp)) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, "Back") }
@@ -322,6 +353,18 @@ private fun Toolbar(
                 if (ui.dirty) {
                     Spacer(Modifier.width(8.dp))
                     Box(Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary).semantics { contentDescription = "Unsaved changes" })
+                }
+                // right of the document name, away from the tools, so it isn't pressed by accident
+                Spacer(Modifier.width(6.dp))
+                Box(
+                    Modifier.size(48.dp).clip(CircleShape)
+                        .background(if (ui.fullscreen) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                        .clickable(onClick = onFullscreen)
+                        .semantics { contentDescription = if (ui.fullscreen) "Exit full screen" else "Full screen" },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(if (ui.fullscreen) Icons.Rounded.FullscreenExit else Icons.Rounded.Fullscreen, null,
+                        tint = if (ui.fullscreen) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface)
                 }
             }
             // tools

@@ -65,6 +65,9 @@ data class ReaderUi(
     val selection: ReaderCanvas.SelectionInfo? = null,
     val scrollbar: Boolean = false,
     val night: Boolean = false,
+    /** Fullscreen: no toolbar or system bars; an edge swipe shows a floating toolbar. */
+    val fullscreen: Boolean = false,
+    val floatingBar: Boolean = false,
     val outline: List<io.github.o7py.margin.model.OutlineItem> = emptyList(),
 )
 
@@ -228,6 +231,7 @@ class ReaderController(
         canvas.setPages(emptyList())
         workFile?.delete(); workFile = null
         canvas.locked = false
+        canvas.edgeSwipeEnabled = false
         _ui.value = ReaderUi(scrollbar = _ui.value.scrollbar, night = _ui.value.night)
     }
 
@@ -516,7 +520,25 @@ class ReaderController(
 
     fun showChrome() = _ui.update { it.copy(chromeVisible = true) }
 
-    override fun onPenDown() {}
+    override fun onPenDown() { if (_ui.value.floatingBar) hideFloatingBar() }
+
+    /** Bumped on every floating-bar interaction; the chrome hides the bar after a quiet period. */
+    val floatingBump = MutableStateFlow(0)
+
+    override fun onEdgeSwipe() {
+        if (!_ui.value.fullscreen) return
+        _ui.update { it.copy(floatingBar = true) }
+        floatingBump.value++
+    }
+
+    fun hideFloatingBar() = _ui.update { it.copy(floatingBar = false) }
+
+    fun toggleFullscreen() {
+        val on = !_ui.value.fullscreen
+        canvas.edgeSwipeEnabled = on
+        _ui.update { it.copy(fullscreen = on, floatingBar = false) }
+        if (on) events.tryEmit(ReaderEvent.Snack("Swipe in from the left or right edge to show the toolbar"))
+    }
     override fun onEdit() {}
     override fun onSelection(info: ReaderCanvas.SelectionInfo?) { _ui.update { it.copy(selection = info) } }
 

@@ -55,12 +55,15 @@ class MainActivity : ComponentActivity() {
     private var saveCopySwitch = false
     /** Immersive reading: the navigation bar is hidden while a document is open. */
     private var immersive = false
+    private var fullscreen = false
 
     private fun applySystemBars() {
         val c = androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
         c.systemBarsBehavior = androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         val nav = androidx.core.view.WindowInsetsCompat.Type.navigationBars()
+        val status = androidx.core.view.WindowInsetsCompat.Type.statusBars()
         if (immersive) c.hide(nav) else c.show(nav)
+        if (immersive && fullscreen) c.hide(status) else c.show(status)
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -167,6 +170,7 @@ class MainActivity : ComponentActivity() {
             immersive = screen == Screen.READER && docOpen
             applySystemBars()
         }
+        LaunchedEffect(ui.fullscreen) { fullscreen = ui.fullscreen; applySystemBars() }
         // Lock: keep the current orientation while reading
         LaunchedEffect(ui.locked, screen) {
             requestedOrientation = if (ui.locked && screen == Screen.READER) android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED
@@ -202,6 +206,7 @@ class MainActivity : ComponentActivity() {
                     when {
                         hideInputDebug() -> {}
                         ui.selection != null -> controller.clearSelection()
+                        ui.fullscreen -> controller.toggleFullscreen()
                         else -> leaveReader()
                     }
                 }

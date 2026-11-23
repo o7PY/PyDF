@@ -48,6 +48,8 @@ class ReaderCanvas(context: Context) : FrameLayout(context), GestureNavigator.St
         fun onPenDown()
         fun onEdit()
         fun onSelection(info: SelectionInfo?)
+        /** A finger swiped in from the left or right edge (fullscreen: reveal the toolbar). */
+        fun onEdgeSwipe()
     }
 
     /** Selection bounds in screen pixels plus what the menu needs. */
@@ -74,6 +76,13 @@ class ReaderCanvas(context: Context) : FrameLayout(context), GestureNavigator.St
     /** Night mode (smart invert of pages). */
     var night = false
         set(v) { field = v; pagesView.night = v; overlay.night = v; overlay.invalidate() }
+
+    /** Fullscreen: a finger swiping in from a side edge reveals the floating toolbar. */
+    var edgeSwipeEnabled = false
+    private var edgeId = -1
+    private var edgeX = 0f
+    private var edgeY = 0f
+    private var edgeFromLeft = true
 
     /** Draggable scroll bar on the right edge. */
     var scrollbarEnabled = false
@@ -317,12 +326,18 @@ class ReaderCanvas(context: Context) : FrameLayout(context), GestureNavigator.St
                 } else if (!isTouching) {
                     scroller.forceFinished(true)
                     val fx = e.getX(idx); val fy = e.getY(idx)
+                    val edge = 28f * density
+                    if (am == MotionEvent.ACTION_DOWN && edgeSwipeEnabled && (fx < edge || fx > width - edge)) {
+                        edgeId = e.getPointerId(idx); edgeX = fx; edgeY = fy; edgeFromLeft = fx < edge
+                    }
                     if (am == MotionEvent.ACTION_DOWN && scrollbarEnabled && overlay.scrollbarHit(fx, fy)) {
                         barFingerId = e.getPointerId(idx)
                         barGrabOffset = fy - overlay.thumbCenterY()
                         overlay.thumbDragging = true; overlay.invalidate()
                     } else if (am == MotionEvent.ACTION_DOWN && selection != null && startHandleDrag(fx, fy)) {
                         selFingerId = e.getPointerId(idx)
+                    } else if (am == MotionEvent.ACTION_DOWN && edgeId == e.getPointerId(idx)) {
+                        // possible edge swipe: don't scroll or long-press until it's decided
                     } else {
                         if (e.pointerCount >= 2) lastMidY = (0 until e.pointerCount).map { e.getY(it) }.average().toFloat()
                         nav.fingerDown(finger(e, idx), now)
@@ -346,6 +361,23 @@ class ReaderCanvas(context: Context) : FrameLayout(context), GestureNavigator.St
                     val si = e.findPointerIndex(selFingerId)
                     if (si >= 0) dragSelection(e.getX(si), e.getY(si))
                     return
+                }
+                if (edgeId != -1 && edgeSwipeEnabled) {
+                    val ei = e.findPointerIndex(edgeId)
+                    if (ei >= 0) {
+                        val dx = (e.getX(ei) - edgeX) * (if (edgeFromLeft) 1f else -1f)
+                        val dy = kotlin.math.abs(e.getY(ei) - edgeY)
+                        if (dx > 40f * density && dx > dy * 1.3f) {
+                            edgeId = -1
+                            nav.cancel(); cancelSelectLongPress(); tapMoved = true
+                            listener?.onEdgeSwipe()
+                            return
+                        } else if (dy > 32f * density || e.eventTime - e.downTime > 600) {
+                            // not an edge swipe after all: hand the finger to normal navigation
+                            edgeId = -1
+                            nav.fingerDown(finger(e, ei), now)
+                        }
+                    }
                 }
                 if (lpPointer != -1) {
                     val li = e.findPointerIndex(lpPointer)
@@ -381,6 +413,7 @@ class ReaderCanvas(context: Context) : FrameLayout(context), GestureNavigator.St
                     if (id == lpPointer) lpPointer = -1
                 }
                 cancelSelectLongPress()
+                if (id == edgeId) edgeId = -1
                 if (am == MotionEvent.ACTION_UP) { nav.cancel(); overlay.debugTouches = emptyList() }
             }
             MotionEvent.ACTION_CANCEL -> {
