@@ -34,15 +34,18 @@ object TextSnapper {
         return idx
     }
 
-    /** First..last char hit in reading order, or null if the stroke touches no text. */
+    /**
+     * Selection-style range: from the first character the stroke touched (anchor) to the character under the
+     * stroke's latest point on text (focus), in reading order. Moving back toward the start shrinks the range.
+     */
     fun range(text: PageText, points: List<InkPoint>, lineExpand: Float = 0.15f): IntRange? {
-        var lo = Int.MAX_VALUE; var hi = Int.MIN_VALUE
+        var anchor = -1; var focus = -1
         for (p in points) {
             val i = charAt(text, p.x, p.y, lineExpand) ?: continue
-            if (i < lo) lo = i
-            if (i > hi) hi = i
+            if (anchor < 0) anchor = i
+            focus = i
         }
-        return if (lo <= hi) lo..hi else null
+        return if (anchor < 0) null else minOf(anchor, focus)..maxOf(anchor, focus)
     }
 
     /** One box per line covered by [range]: char extent in x, line bbox in y. */
@@ -67,8 +70,10 @@ object TextSnapper {
      * O(new points) per update instead of O(all points).
      */
     class Accumulator(private val text: PageText, private val lineExpand: Float) {
-        private var lo = Int.MAX_VALUE
-        private var hi = Int.MIN_VALUE
+        /** First character touched; fixed for the whole stroke. */
+        private var anchor = -1
+        /** Character under the most recent point that was on text (kept while the pen is between lines). */
+        private var focus = -1
         private var processed = 0
         private var cachedRange: IntRange? = null
         private var cachedBoxes: List<Box> = emptyList()
@@ -76,13 +81,13 @@ object TextSnapper {
         fun update(points: List<InkPoint>) {
             for (k in processed until points.size) {
                 val i = charAt(text, points[k].x, points[k].y, lineExpand) ?: continue
-                if (i < lo) lo = i
-                if (i > hi) hi = i
+                if (anchor < 0) anchor = i
+                focus = i
             }
             processed = points.size
         }
 
-        val range: IntRange? get() = if (lo <= hi) lo..hi else null
+        val range: IntRange? get() = if (anchor < 0) null else minOf(anchor, focus)..maxOf(anchor, focus)
 
         fun boxes(): List<Box> {
             val r = range ?: return emptyList()

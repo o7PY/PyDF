@@ -65,4 +65,44 @@ class TextSnapperTest {
         val i = TextSnapper.nearestChar(t, 230f, 78f)!!
         assertEquals(1, t.chars[i].line)
     }
+
+    // ---- selection-style highlighting: going back un-highlights
+
+    private val ten = Fixtures.page(lines = 3, chars = 10) // chars 6 pt wide from x=72, lines at y 72/88/104
+
+    @Test fun goingBackOnTheSameLineShrinks() {
+        val y = ten.lines[0].bbox.cy
+        val pts = Fixtures.line(75f, y, 125f, y) + Fixtures.line(125f, y, 95f, y)   // to char 8, back to char 3
+        val acc = TextSnapper.Accumulator(ten, 0.15f)
+        acc.update(pts)
+        assertEquals(0..3, acc.range)
+        assertEquals(0..3, TextSnapper.range(ten, pts))
+    }
+
+    @Test fun goingPastTheStartFlipsDirection() {
+        val y = ten.lines[0].bbox.cy
+        val pts = Fixtures.line(100f, y, 125f, y) + Fixtures.line(125f, y, 75f, y)  // start char 4, end char 0
+        assertEquals(0..4, TextSnapper.range(ten, pts))
+    }
+
+    @Test fun comingBackFromAnotherLineRemovesThatLine() {
+        val y0 = ten.lines[0].bbox.cy; val y2 = ten.lines[2].bbox.cy
+        val acc = TextSnapper.Accumulator(ten, 0.15f)
+        val down = Fixtures.line(80f, y0, 125f, y2, n = 40)          // line 1 → end of line 3
+        acc.update(down)
+        assertEquals(1..28, acc.range)                                // three lines highlighted
+        assertEquals(3, TextSnapper.boxes(ten, acc.range!!).size)
+        val back = down + Fixtures.line(125f, y2, 110f, y0, n = 40)  // back up to line 1
+        acc.update(back)
+        assertEquals(1..6, acc.range)                                 // only line 1 again
+        assertEquals(1, TextSnapper.boxes(ten, acc.range!!).size)
+    }
+
+    @Test fun pausingBetweenLinesKeepsTheHighlight() {
+        val y0 = ten.lines[0].bbox.cy
+        val gapY = ten.lines[0].bbox.y1 + 2f     // exact middle of the gap between line 1 and line 2 bands
+        val acc = TextSnapper.Accumulator(ten, 0.15f)
+        acc.update(Fixtures.line(80f, y0, 120f, y0) + Fixtures.line(120f, gapY, 121f, gapY, n = 3))
+        assertEquals(1..7, acc.range)
+    }
 }
